@@ -19,7 +19,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{document}
-\SweaveOpts{concordance=TRUE}
+
 
 \begin{center}
 {\bf Mathematics 4MB3/6MB3 Mathematical Biology\\
@@ -42,7 +42,7 @@ This plain text comma-separated-value file can be examined (if you wish) using a
 
 \item Read the data into a data frame in \Rlogo, using the \code{read.csv()} function.  For example, the following chunk of \Rlogo code should work:
 <<read.phila.data>>=
-datafile <- "pim_us_phila_city_1918_dy.csv"
+datafile <- "pim_us_phila_city_1918_dy.csv" 
 philadata <- read.csv(datafile)
 philadata$date <- as.Date(philadata$date)
 @ 
@@ -51,9 +51,23 @@ The purpose of the last line of code above is to ensure that \Rlogo encodes char
 \item Reproduce [the Philadelphia 1918 P\&I] plot:
 
   {\color{blue} \begin{proof}[Solution]
-  {\color{magenta}\dots beautiful graph here\dots\ and nicely commented code that produces it, either in a separate \texttt{.R} file or preceding the graph if this is a \texttt{knitr} script\dots}
-  \end{proof}
+  {\color{magenta}\n
+<<Q1c,echo=FALSE,fig.height=6,fig.align="center">>=
+datafile <- "pim_us_phila_city_1918_dy.csv"
+philadata <- read.csv(datafile)
+philadata$date <- as.Date(philadata$date)
+linedata <- philadata[31:41,]
+loglinedata <- philadata[20:37,]
+
+plot(pim~date,philadata,type="l",col="gray",bty="L",xlab="",ylab="",xaxs="i",yaxs="i",las=1)
+  points(pim~date,philadata,pch=21,bg="red",xpd=TRUE)
+  mtext("Date",side=1,line=2,adj=1,col="blue",cex=1.25)
+  loc=par("usr")
+  text(loc[1],loc[4],"P&I Deaths",xpd=T,adj=c(1,0),pos=3,col="blue",cex=1.25)
+@
   }
+  \end{proof}
+}
 
 \end{enumerate}
 
@@ -68,10 +82,19 @@ The purpose of the last line of code above is to ensure that \Rlogo encodes char
  \end{proof}
  }
 
-\item Fit a straight line to the part of the Philadelphia 1918 mortality time series that looks straight on a logarithmic scale (and show your result in a plot).  Once you get the hang of it, the easiest way to do this is to use the \code{lm()} function in \Rlogo (lm stands for linear model).  Note that simplest way to draw a straight line with given slope and intercept is with the \code{abline()} function.  If you find \code{lm()} counter-intutive to understand then experiment with \code{abline()} until your eyes tell you that you have discovered a line that provides a good fit.
+\item Fit a straight line to the part of the Philadelphia 1918 mortality time series that looks straight on a logarithmic scale (and show your result in a plot).  Once you get the hang of it, the easiest way to do this is to use the \code{lm()} function in \Rlogo (lm stands for linear model).  Note that simplest way to draw a straight line with given slope and intercept is with the \code{abline()} function.  If you find \code{lm()} counter-intuitive to understand then experiment with \code{abline()} until your eyes tell you that you have discovered a line that provides a good fit.
 
   {\color{blue} \begin{proof}[Solution]
-  {\color{magenta}\dots beautifully clear text and plot(s) here \dots\ interspersed with \Rlogo code if this is a \texttt{knitr} script}
+  {\color{magenta}\n
+<<Q2b,echo=FALSE,fig.height=6,fig.align="center">>=
+plot(log(pim)~date,philadata,type="l",col="gray",bty="L",xlab="",ylab="",xaxs="i",yaxs="i",las=1)
+points(log(pim)~date,philadata,pch=21,bg="red",xpd=TRUE)
+mtext("Date",side=1,line=2,adj=1,col="blue",cex=1.25)
+loc=par("usr")
+text(loc[1],loc[4],"P&I Deaths",xpd=T,adj=c(1,0),pos=3,col="blue",cex=1.25)
+abline(lm(log(pim)~date,loglinedata),lty=2,lwd=2)
+@
+  }
   \end{proof}
   }
 
@@ -143,7 +166,7 @@ draw.soln <- function(ic=c(x=1,y=0), tmax=1,
   lines(times, soln[,"y"], col="blue", lwd=3, ... )
 }
 @ 
-Note here that the call to the \code{ode()} function gives the arguments in the default order so they are interpretted correctly.  If we wished to write the arguments in a different order then we would have to be explicit about which argument is which.  For example, if we wanted to list the initial conditions last for some deep reason then we would have to write:
+Note here that the call to the \code{ode()} function gives the arguments in the default order so they are interpreted correctly.  If we wished to write the arguments in a different order then we would have to be explicit about which argument is which.  For example, if we wanted to list the initial conditions last for some deep reason then we would have to write:
 %% Note: the knitr chunk option eval=FALSE prevents the chunk from being evaluated.
 %% It is simply typeset.
 <<eval=FALSE>>=
@@ -176,14 +199,95 @@ for (i in 1:length(betavals)) {
   \end{itemize}
 
  {\color{blue} \begin{proof}[Solution]
- {\color{magenta}\dots If this is a \texttt{knitr} script then your code should be displayed here.  Otherwise, you should state here the name of the file where the \Rlogo code is, and the names of any functions you defined\dots}
+ {\color{magenta} \n
+ <<Q3b,eval=FALSE>>=
+## Vector Field for SIR Model
+SIR.vector.field <- function(t,vars,parms=c(R_0=1,gamma=1)) {
+  with(as.list(c(parms,vars)), {
+    dx <- -R_0*gamma*x*y  ## dS/dt
+    dy <- gamma*(R_0*x*y-y)  ## dI/dt
+    vec.fld <- c(dx=dx,dy=dy)
+    return(list(vec.fld)) 
+  })
+}
+
+## Draw Solution
+draw.soln <- function(ic=c(x=1,y=0),tmax=1,
+                      times=seq(0,tmax,by=tmax/500),
+                      func,parms,...) {
+  soln <- ode(ic,times,func,parms)
+  lines(times,soln[,"y"],lwd=2,...)
+}
+
+## Plot Solutions of the SIR Model
+tmax <- _____
+## draw box for plot
+plot(0,0,xlim=c(0,tmax),ylim=c(0,1),type="n",xlab="Time (t)",
+     ylab="Prevalence (I)",las=1)
+## initial conditions
+I0 <- _____
+S0 <- _____
+## draw solutions for several values of parameter R_0
+vals <- c(_____,_____,_____,_____,_____,_____,...)
+line <- c(1:length(vals))
+for (i in 1:length(vals)) {
+  draw.soln(ic=c(x=S0,y=I0),tmax=tmax,
+            func=SIR.vector.field,parms=c(R_0=vals[i],gamma=_____),
+            lty=line[i], # use a different line style for each solution
+            col=line[i]) # use a different line colour for each solution
+}
+# draw legend for different values of R_0
+legend("topright",legend=vals,lty=line,col=line,title="\\R_0 Values")
+@
+ }
  \end{proof}
  }
 
 \item For $I_0=10^{-3}$ and $S_0=1-I_0$, plot the solutions of the SIR model assuming $1/\gamma=4$ days and $\R_0\in\{1.2,1.5,1.8,2,3,4\}$.  Use the \code{legend()} command to make a legend on the plot that shows which curves correspond to which values of $\R_0$.
 
   {\color{blue} \begin{proof}[Solution]
-  {\color{magenta}\dots beautifully clear text and plot(s) here \dots\ preceded by \Rlogo code if this is a \texttt{knitr} script}
+  {\color{magenta} [Insert Text Here]
+  
+  <<Q3c,echo=FALSE,fig.height=6>>=
+## Vector Field for SIR Model
+SIR.vector.field <- function(t,vars,parms=c(R_0=1,gamma=1)) {
+  with(as.list(c(parms,vars)), {
+    dx <- -R_0*gamma*x*y  ## dS/dt
+    dy <- gamma*(R_0*x*y-y)  ## dI/dt
+    vec.fld <- c(dx=dx,dy=dy)
+    return(list(vec.fld)) 
+  })
+}
+
+## Draw Solution
+draw.soln <- function(ic=c(x=1,y=0),tmax=1,
+                      times=seq(0,tmax,by=tmax/500),
+                      func,parms,...) {
+  soln <- ode(ic,times,func,parms)
+  lines(times,soln[,"y"],lwd=2,...)
+}
+
+## Plot Solutions of the SIR Model
+tmax <- 40
+## draw box for plot
+plot(0,0,xlim=c(0,tmax),ylim=c(0,1),type="n",xlab="Time (t)",
+     ylab="Prevalence (I)",las=1)
+## initial conditions
+I0 <- 1e-3
+S0 <- 1-I0
+## draw solutions for several values of parameter R_0
+vals <- c(1.2,1.5,1.8,2,3,4)
+line <- c(1:length(vals))
+for (i in 1:length(vals)) {
+  draw.soln(ic=c(x=S0,y=I0),tmax=tmax,
+            func=SIR.vector.field,parms=c(R_0=vals[i],gamma=1/4),
+            lty=line[i], # use a different line style for each solution
+            col=line[i]) # use a different line colour for each solution
+}
+# draw legend for different values of R_0
+legend("topright",legend=vals,lty=line,col=line,title="\\R_0 Values")
+@
+  }
   \end{proof}
   }
 
