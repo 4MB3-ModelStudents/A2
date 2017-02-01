@@ -78,7 +78,20 @@ plot(pim~date,philadata,type="l",col="gray",bty="L",xlab="",ylab="",xaxs="i",yax
 \item The observed mortality time series $M(t)$ is certainly not equal to the prevalence $I(t)$ that appears in the SIR model.  Suppose, however, that $I(t) = \eta M(t-\tau)$ for all time (where $\eta$ and $\tau$ are constants), \emph{i.e.,} that the mortality curve is exactly a scaled and translated version of the prevalence curve.  Prove that if both $I$ and $M$ are growing exactly exponentially over some time period then their exponential rates are identical.  Thus, if we compare them during the ``exponential phase'' on a logarithmic scale, then both curves will be perfectly straight with exactly the same slope.
 
  {\color{blue} \begin{proof}[Solution]
- {\color{magenta}\dots beautifully clear and concise text to be inserted here\dots}
+ {\color{magenta}
+  Assume that $I(t)$ and $M(t)$ are growing exponentially for $t \in (\alpha, \beta)$:
+\begin{align}
+  I(t) &= a_1 e^{b_1 t}  \\
+  M(t) &= a_2 e^{b_2 t} 
+\end{align}
+If $I(t) = \eta M(t-\tau)$, then
+\begin{align}
+  a_1 e^{b_1 t}  &=\eta a_2 e^{b_2 (t-\tau)} \\
+  e^{(b_1-b_2) t+ b_2\tau} &= \frac{\eta a_2}{a_1} \\
+  (b_1-b_2) t &= \log \left ( \frac{\eta a_2}{a_1} \right )- b_2\tau \label{eq2a}
+\end{align}
+The left hand side of~\ref{eq2a} is a constant but this is true for a range of $t$. Therefore, the right hand side must be zero and $b_1=b_2$.
+ }
  \end{proof}
  }
 
@@ -101,7 +114,20 @@ abline(lm(log(pim)~date,loglinedata),lty=2,lwd=2)
 \item How is the slope of your fitted line related to the parameters of the SIR model?  (\emph{Hint:} When $I$ is small, $S\simeq1$.) Why do you need an independent measure of the mean infectious period to estimate $\R_0$?  If the mean infectious period is 4 days, what is your estimate of $\R_0$?
 
   {\color{blue} \begin{proof}[Solution]
-  {\color{magenta}\dots beautifully clear text here \dots\ including some embedded \Rlogo code to estimate $\R_0$ if this is a \texttt{knitr} script}
+  {\color{magenta}
+  Initially, when $I$ is small and $S\simeq1$, the rate of change of the prevalence goes like
+\begin{align}
+	\frac{dI}{dt} &= (\R_0S-1)\gamma I \\
+	& \simeq (\R_0-1)\gamma I
+\end{align}
+Thus, initially $I(t)\simeq I_0 e^{(\R_0-1)\gamma t}$ and  
+\begin{equation}
+	\log(I(t))\simeq (\R_0-1)\gamma t + \log(I_0)
+\end{equation}
+and so the slope of the fitted line on the log plot of prevalence is $(\R_0-1)\gamma$.
+Since this slope depends on both $\R_0$ and $\gamma$, another measure of $\gamma$ is required to estimate $\R_0$.
+  
+  }
   \end{proof}
   }
 
@@ -294,7 +320,50 @@ legend("topright",legend=vals,lty=line,col=line,title="\\R_0 Values")
 \item By trial and error, find values of $\R_0$ and $\gamma$ that yield a solution of the SIR model that fits the Philadelphia P\&I times series reasonably well.  You can assess the quality of fit using the Euclidean distance between the model solution and the data.  (\emph{Note:}  The trial and error approach is a valuable exercise, but not a suggestion of a method you would really use in practice.  We'll discuss better methods for fitting ODE models to data later.)
 
   {\color{blue} \begin{proof}[Solution]
-  {\color{magenta}\dots beautifully clear text and plot(s) here \dots\ interspersed with \Rlogo code if this is a \texttt{knitr} script}
+  {\color{magenta}
+  
+    <<Q3d,echo=FALSE,fig.height=6,fig.align="center">>=
+
+philadata$date <- as.numeric(as.Date(philadata$date)-as.Date(philadata$date[1]))
+philadata$pim <- philadata$pim/(2*max(philadata$pim))
+
+plot(pim~date,philadata,type="l",col="gray",bty="L",xlab="",ylab="",xaxs="i",yaxs="i",las=1)
+  points(pim~date,philadata,pch=21,bg="red",xpd=TRUE)
+  mtext("Days after 1918-09-01",side=1,line=2,adj=1,col="blue",cex=1.25)
+  loc=par("usr")
+  text(loc[1],loc[4],"P&I Deaths",xpd=T,adj=c(1,0),pos=3,col="blue",cex=1.25)
+
+  ## Draw Solution Modified to have a start time
+draw.soln <- function(ic=c(x=1,y=0),tmax=1,tstart=0,
+                      times=seq(tstart,tmax,by=tmax/500-tstart/500),
+                      func,parms,...) {
+  soln <- ode(ic,times,func,parms)
+  lines(times,soln[,"y"],lwd=2,...)
+}  
+
+## Plot Solutions of the SIR Model
+tmax <- 122
+tstart <- 10
+
+
+## initial conditions
+I0 <- 1e-3
+S0 <- 1-I0
+
+## draw solutions for several values of parameter R_0
+vals <- seq(1.2,5,length=5)
+line <- c(1:length(vals))
+for (i in 1:length(vals)) {
+  draw.soln(ic=c(x=S0,y=I0),tmax=tmax,tstart=tstart,
+            func=SIR.vector.field,parms=c(R_0=vals[i],gamma=1/15),
+            lty=line[i], # use a different line style for each solution
+            col=line[i]) # use a different line colour for each solution
+}
+# draw legend for different values of R_0
+legend("topright",legend=vals,lty=line,col=line,title="\\R_0 Values") #**
+@
+  
+  }
   \end{proof}
   }
 
