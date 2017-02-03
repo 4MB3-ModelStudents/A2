@@ -361,6 +361,38 @@ for (i in 1:length(vals)) {
 }
 # draw legend for different values of R_0
 legend("topright",legend=vals,lty=line,col=line,title="\\R_0 Values") #**
+
+
+#define dist fct
+  euc.dist <- function(x1, x2){ sqrt(sum((x1 - x2) ^ 2)) }
+#distance between data and solution
+modeldist <- function(R_0=2.03, gamma=1/3){
+  #input to ode
+  I0 <- 1e-6
+  S0 <- 1-I0
+  tmax <- 122
+  tstart <- 0
+  ic<-c(x=S0,y=I0)
+  times<-seq(tstart,tmax,by=tmax/500-tstart/500)
+  func<-SIR.vector.field
+  parms<-c(R_0,gamma)
+  #get solution
+  soln <- ode(ic,times,func,parms)
+  #index of rows of soln
+  inxvals<-c(1:length(soln[,1]))
+  
+  dist <- numeric(length(philadatatrans$date))
+  for (i in 1:length(philadatatrans$date)){
+   x<-philadatatrans$date[i]
+     #get index in soln of row with same x value as data
+   index <- which(abs(soln[,1]-x)==min(abs(soln[,1]-x)))
+   dist[i]=euc.dist( c(x,philadatatrans$pim[i]), c(soln[index,1],soln[index,3]))
+  }
+  avgdist <- mean(dist)
+  return(avgdist)
+}
+modeldist(2.03,(1/3))
+
 @
   
   }
