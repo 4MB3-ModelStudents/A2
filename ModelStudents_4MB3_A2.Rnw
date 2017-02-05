@@ -423,7 +423,7 @@ By setting $\gamma = 0.25$ this method leads to the following results,
 	$\\B = 0.2439$
 	$\\R_0 = 1.9756$
 	$\\I_0 = $
-This fits the given dataset, since the magnitude of $\R_0$ is greater than 1, meaning $\abs{\frac{dI}{dt}} > 0$. 
+This fits the given dataset, since the magnitude of $\R_0$ is greater than 1, which implies that $\abs{\frac{dI}{dt}} > 0$. Comparing a variety of curves of from the SIR model with the same $\gamma$, and $\\I_0 $ value and with different values of $\R_0$ ranging from 1 to 5, it can be seen that the curve that fits the data best is the curve with $\R_0 = 2$. Based on these results, it is important that the PHAC continues to receive funding in order to determine better means to contain the growth of influenza in case of an outbreak.
   \end{proof}
   }
 
