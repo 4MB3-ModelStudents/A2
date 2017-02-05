@@ -423,6 +423,7 @@ By setting $\gamma = 0.25$ this method leads to the following results,
 	$\\B = 0.2439$
 	$\\R_0 = 1.9756$
 	$\\I_0 = $
+This fits the given dataset, since the magnitude of $\R_0$ is greater than 1, meaning $\abs{\frac{dI}{dt}} > 0$. 
   \end{proof}
   }
 
