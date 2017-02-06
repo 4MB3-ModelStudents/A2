@@ -51,16 +51,18 @@ The purpose of the last line of code above is to ensure that \Rlogo encodes char
 \item Reproduce [the Philadelphia 1918 P\&I] plot:
 
   {\color{blue} \begin{proof}[Solution]
-  {\color{magenta}\n
+  {\color{magenta}
 <<Q1c,echo=FALSE,fig.height=6,fig.align="center">>=
 datafile <- "pim_us_phila_city_1918_dy.csv"
 philadata <- read.csv(datafile)
 philadata$date <- as.Date(philadata$date)
-linedata <- philadata[31:41,]
-loglinedata <- philadata[20:37,]
 
+
+#Plotting data with a grey line, L shape plot borders, and no labels
 plot(pim~date,philadata,type="l",col="gray",bty="L",xlab="",ylab="",xaxs="i",yaxs="i",las=1)
+#Plotting red dots with black outlines at data points
   points(pim~date,philadata,pch=21,bg="red",xpd=TRUE)
+  #Adding labels
   mtext("Date",side=1,line=2,adj=1,col="blue",cex=1.25)
   loc=par("usr")
   text(loc[1],loc[4],"P&I Deaths",xpd=T,adj=c(1,0),pos=3,col="blue",cex=1.25)
@@ -98,13 +100,22 @@ The left hand side of~\ref{eq2a} is a constant but this is true for a range of $
 \item Fit a straight line to the part of the Philadelphia 1918 mortality time series that looks straight on a logarithmic scale (and show your result in a plot).  Once you get the hang of it, the easiest way to do this is to use the \code{lm()} function in \Rlogo (lm stands for linear model).  Note that simplest way to draw a straight line with given slope and intercept is with the \code{abline()} function.  If you find \code{lm()} counter-intuitive to understand then experiment with \code{abline()} until your eyes tell you that you have discovered a line that provides a good fit.
 
   {\color{blue} \begin{proof}[Solution]
-  {\color{magenta}\n
-<<Q2b,echo=FALSE,fig.height=6,fig.align="center">>=
-plot(log(pim)~date,philadata,type="l",col="gray",bty="L",xlab="",ylab="",xaxs="i",yaxs="i",las=1)
+  {\color{magenta}
+<<Q2b,echo=TRUE,fig.height=6,fig.align="center">>=
+  #Plotting data with a grey line, L shape plot borders, 
+  #and no labels
+plot(log(pim)~date,philadata,type="l",col="gray",bty="L",xlab="",
+     ylab="",xaxs="i",yaxs="i",las=1)
+  #Plotting red dots with black outlines at data points
 points(log(pim)~date,philadata,pch=21,bg="red",xpd=TRUE)
+#Adding labels
 mtext("Date",side=1,line=2,adj=1,col="blue",cex=1.25)
 loc=par("usr")
-text(loc[1],loc[4],"P&I Deaths",xpd=T,adj=c(1,0),pos=3,col="blue",cex=1.25)
+text(loc[1],loc[4],"P&I Deaths",xpd=T,adj=c(1,0),pos=3,col="blue",
+     cex=1.25)
+
+#Fitting a straight line using lm to a subset of the data
+loglinedata <- philadata[20:37,]
 abline(lm(log(pim)~date,loglinedata),lty=2,lwd=2)
 @
   }
@@ -126,6 +137,7 @@ Thus, initially $I(t)\simeq I_0 e^{(\R_0-1)\gamma t}$ and
 \end{equation}
 and so the slope of the fitted line on the log plot of prevalence is $(\R_0-1)\gamma$.
 Since this slope depends on both $\R_0$ and $\gamma$, another measure of $\gamma$ is required to estimate $\R_0$.
+The slope of the fitted line of the log graph of the 1918 P\&I data is 0.2439. If the mean infectious period is 4 days then our estimate of $\R_0$ is 1.9756.
   
   }
   \end{proof}
@@ -225,7 +237,7 @@ for (i in 1:length(betavals)) {
   \end{itemize}
 
  {\color{blue} \begin{proof}[Solution]
- {\color{magenta} \n
+ {\color{magenta} 
  <<Q3b,eval=FALSE>>=
 ## Vector Field for SIR Model
 SIR.vector.field <- function(t,vars,parms=c(R_0=1,gamma=1)) {
@@ -236,34 +248,27 @@ SIR.vector.field <- function(t,vars,parms=c(R_0=1,gamma=1)) {
     return(list(vec.fld)) 
   })
 }
-
-## Draw Solution
-draw.soln <- function(ic=c(x=1,y=0),tmax=1,
-                      times=seq(0,tmax,by=tmax/500),
-                      func,parms,...) {
-  soln <- ode(ic,times,func,parms)
-  lines(times,soln[,"y"],lwd=2,...)
+## Draw solution
+draw.soln <- function(ic=c(x=1,y=0), tmax=1, 
+                      times=seq(0,tmax,by=tmax/500), 
+                      func, parms, ... ) {
+  soln <- ode(ic, times, func, parms)
+  lines(times, soln[,"y"], col="blue", lwd=3, ... )
 }
 
-## Plot Solutions of the SIR Model
-tmax <- _____
-## draw box for plot
-plot(0,0,xlim=c(0,tmax),ylim=c(0,1),type="n",xlab="Time (t)",
+##Function to plot Solutions of the SIR Model
+plotSIR <- function(R_0, gamma, I0=1e-3, S0=1-I0){
+  tmax <- 40
+  ## draw box for plot
+  plot(0,0,xlim=c(0,tmax),ylim=c(0,1),type="n",xlab="Time (t)",
      ylab="Prevalence (I)",las=1)
-## initial conditions
-I0 <- _____
-S0 <- _____
-## draw solutions for several values of parameter R_0
-vals <- c(_____,_____,_____,_____,_____,_____,...)
-line <- c(1:length(vals))
-for (i in 1:length(vals)) {
+
   draw.soln(ic=c(x=S0,y=I0),tmax=tmax,
-            func=SIR.vector.field,parms=c(R_0=vals[i],gamma=_____),
-            lty=line[i], # use a different line style for each solution
-            col=line[i]) # use a different line colour for each solution
+            func=SIR.vector.field,parms=c(R_0,gamma),
+            lty=2) 
 }
-# draw legend for different values of R_0
-legend("topright",legend=vals,lty=line,col=line,title="\\R_0 Values")
+
+
 @
  }
  \end{proof}
@@ -272,9 +277,9 @@ legend("topright",legend=vals,lty=line,col=line,title="\\R_0 Values")
 \item For $I_0=10^{-3}$ and $S_0=1-I_0$, plot the solutions of the SIR model assuming $1/\gamma=4$ days and $\R_0\in\{1.2,1.5,1.8,2,3,4\}$.  Use the \code{legend()} command to make a legend on the plot that shows which curves correspond to which values of $\R_0$.
 
   {\color{blue} \begin{proof}[Solution]
-  {\color{magenta} [Insert Text Here]
+  {\color{magenta} 
   
-  <<Q3c,echo=FALSE,fig.height=6>>=
+  <<Q3c,echo=TRUE,fig.height=6>>=
 ## Vector Field for SIR Model
 SIR.vector.field <- function(t,vars,parms=c(R_0=1,gamma=1)) {
   with(as.list(c(parms,vars)), {
@@ -307,10 +312,10 @@ line <- c(1:length(vals))
 for (i in 1:length(vals)) {
   draw.soln(ic=c(x=S0,y=I0),tmax=tmax,
             func=SIR.vector.field,parms=c(R_0=vals[i],gamma=1/4),
-            lty=line[i], # use a different line style for each solution
-            col=line[i]) # use a different line colour for each solution
+            lty=line[i], ## use a different line style for each solution
+            col=line[i]) ## use a different line colour for each solution
 }
-# draw legend for different values of R_0
+## draw legend for different values of R_0
 legend("topright",legend=vals,lty=line,col=line,title="\\R_0 Values")
 @
   }
@@ -321,77 +326,79 @@ legend("topright",legend=vals,lty=line,col=line,title="\\R_0 Values")
 
   {\color{blue} \begin{proof}[Solution]
   {\color{magenta}
+  By trial and error, the values $\R_0 = 2.03$ and $\gamma = \frac{1}{3}$ yielded a solution of the SIR model that fit the Philadelphia P\&I times series reasonably well. Below is a graph of the solution with these parameter values, and the data with P\&I deaths scaled to be out of 5000 and dates replaced by days after the start of the epidemic.
   
-    <<Q3d,echo=FALSE,fig.height=6,fig.align="center">>=
+    <<Q3d,echo=TRUE,fig.height=6,fig.align="center">>=
 
-philadata$date <- as.numeric(as.Date(philadata$date)-as.Date(philadata$date[1]))
-philadata$pim <- philadata$pim/(2*max(philadata$pim))
-
-plot(pim~date,philadata,type="l",col="gray",bty="L",xlab="",ylab="",xaxs="i",yaxs="i",las=1)
-  points(pim~date,philadata,pch=21,bg="red",xpd=TRUE)
+#Copying the data to transform it by replacing the date data with days
+#after the start of the epidemic, and replacing number of deaths with
+#proportion of deaths assuming an initial susceptible population of 5000 
+philadatatrans <- philadata
+philadatatrans$date <- as.numeric(as.Date(philadata$date)-
+                                    as.Date(philadata$date[1]))
+philadatatrans$pim <- philadata$pim/5000
+plot(pim~date,philadatatrans,type="l",col="gray",bty="L",xlab="",
+     ylab="",xaxs="i",yaxs="i",las=1) 
+  points(pim~date,philadatatrans,pch=21,bg="red",xpd=TRUE)
   mtext("Days after 1918-09-01",side=1,line=2,adj=1,col="blue",cex=1.25)
   loc=par("usr")
-  text(loc[1],loc[4],"P&I Deaths",xpd=T,adj=c(1,0),pos=3,col="blue",cex=1.25)
+  text(loc[1],loc[4],"Proportion of P&I Deaths \n out of 5000",
+       xpd=T,adj=c(1,0),pos=3,col="blue",cex=1.25)
 
-  ## Draw Solution Modified to have a start time
-draw.soln <- function(ic=c(x=1,y=0),tmax=1,tstart=0,
-                      times=seq(tstart,tmax,by=tmax/500-tstart/500),
-                      func,parms,...) {
-  soln <- ode(ic,times,func,parms)
-  lines(times,soln[,"y"],lwd=2,...)
-}  
-
-## Plot Solutions of the SIR Model
+##Number of days
 tmax <- 122
-tstart <- 10
 
-
-## initial conditions
-I0 <- 1e-3
+#Initial conditions
+I0 <- 1e-6
 S0 <- 1-I0
 
-## draw solutions for several values of parameter R_0
-vals <- seq(1.2,5,length=5)
-line <- c(1:length(vals))
-for (i in 1:length(vals)) {
-  draw.soln(ic=c(x=S0,y=I0),tmax=tmax,tstart=tstart,
-            func=SIR.vector.field,parms=c(R_0=vals[i],gamma=1/15),
-            lty=line[i], # use a different line style for each solution
-            col=line[i]) # use a different line colour for each solution
+## Vector Field for SIR Model
+SIR.vector.field <- function(t,vars,parms=c(R_0=1,gamma=1)) {
+  with(as.list(c(parms,vars)), {
+    dx <- -R_0*gamma*x*y  ## dS/dt
+    dy <- gamma*(R_0*x*y-y)  ## dI/dt
+    vec.fld <- c(dx=dx,dy=dy)
+    return(list(vec.fld)) 
+  })
 }
-# draw legend for different values of R_0
-legend("topright",legend=vals,lty=line,col=line,title="\\R_0 Values") #**
 
+## draw solution for R_0=2.03, gamma=1/3
+R_0 <- 2.03
+draw.soln(ic=c(x=S0,y=I0),tmax=tmax,
+            func=SIR.vector.field,parms=c(R_0,gamma=1/3),
+            lty=2)
 
-#define dist fct
+#Define a function that calculates the Euclidean distance between points
   euc.dist <- function(x1, x2){ sqrt(sum((x1 - x2) ^ 2)) }
-#distance between data and solution
-modeldist <- function(R_0=2.03, gamma=1/3){
+  
+#Calculating the mean distance between data 
+  #and the ode solution
+
+  R_0<-2.03
+  gamma<-1.0/3
   #input to ode
   I0 <- 1e-6
   S0 <- 1-I0
   tmax <- 122
-  tstart <- 0
   ic<-c(x=S0,y=I0)
-  times<-seq(tstart,tmax,by=tmax/500-tstart/500)
+  times<-seq(0,tmax,by=tmax/500)
   func<-SIR.vector.field
   parms<-c(R_0,gamma)
   #get solution
   soln <- ode(ic,times,func,parms)
   #index of rows of soln
   inxvals<-c(1:length(soln[,1]))
-  
+  #making vecotr of zeros to store distances betwwen points in
   dist <- numeric(length(philadatatrans$date))
   for (i in 1:length(philadatatrans$date)){
    x<-philadatatrans$date[i]
      #get index in soln of row with same x value as data
    index <- which(abs(soln[,1]-x)==min(abs(soln[,1]-x)))
-   dist[i]=euc.dist( c(x,philadatatrans$pim[i]), c(soln[index,1],soln[index,3]))
+   dist[i]=euc.dist( c(x,philadatatrans$pim[i]), 
+                     c(soln[index,1],soln[index,3]))
   }
   avgdist <- mean(dist)
-  return(avgdist)
-}
-modeldist(2.03,(1/3))
+
 
 @
   
@@ -411,7 +418,8 @@ Incidentally, you might be interested to know that rumour has it that all of the
 \noindent{\em\underline{Note}: When submitting your assignment solution, it is imperative that the one-page executive summary be printed on its own page.  To start a new page in \LaTeX, use the \verb|\newpage| command.  Also, as usual, your summary should be in 12 point font.  Don't try to cram in as much as possible.  Make that page as clear and concise as you can, so that a public health planner can absorb its content quickly and easily.}
 
   {\color{blue} \begin{proof}[Solution]
-  {\color{magenta}\dots beautifully clear executive summary here, on its own page\dots}
+  {\color{magenta}
+  \newpage
     A plot of the original data clearly shows that the peak of the epidemic occurred in mid-October, where approximately 800 individuals died from either influenza or pneumonia. In addition to this, the epidemic appears to have endured for approximately 40 days, beginning in mid-September and ending by mid-November. Overall the data produces a curve that exhibits a symmetric relationship along the peak, which biologically may signify that the rate at which influenza spread and dissipated in this epidemic is approximately equivalent. However the biological significance of these results may not hold, due to the fact that the data is based on the assumption that individuals that exhibited symptoms characterized by pneumonia before death were afflicted by influenza. This assumption may not hold, since pneumonia is not a quantifiable marker that is always traced back directly to influenza. As a result, it is highly recommended that PHAC continues to receive funding to systematically filter out false positives, in order to increase the reliability of the data. 
 The plot of the log transformed data clearly showcases the degree of variation that exists within the sections in the plot that illustrate a non-infectious period. This variability clearly shows the presence of fatal influenza cases before the epidemic. If the infectious period of influenza is high, it is possible that the deaths of the individuals observed during the period before the outbreak, could have caused the epidemic.  However, due to the fact that the number of deaths that produce this variability is very small, this observation is likely insignificant. In addition to this, the plot shows that the number of deaths that were recorded did not level off back to the values before the epidemic. This observation may mean that the disease continued to be spread by individuals that were immune infected carriers or immigrants, or that the disease continued to thrive in organisms or environments where human exposure was unlikely. Regardless of the phenomena showcased by the log transform, it is apparent by the first graph that the number of the deaths that lead to this variability between the tails of the curve and within the curve is approximately equivalent. This implies that the log transform exaggerates this relationship meaning that one must scrutinize it carefully.  
 By fitting a line through the component of the log transformed curve that is increasing towards the peak, the parameter $\B$ can be estimated by calculating the slope of the linear relationship, and the parameter $\I_0$ by calculating the y-intercept of the line. The parameter $\B$ represents the average number of contacts with the susceptible population that lead to a new infective per unit time per infective in the population. Using the estimated value of $\B$, the value of $\R_0$ is estimated by using the following equation, 
@@ -424,6 +432,7 @@ By setting $\gamma = 0.25$ this method leads to the following results,
 	$\\R_0 = 1.9756$
 	$\\I_0 = $
 This fits the given dataset, since the magnitude of $\R_0$ is greater than 1, which implies that $\abs{\frac{dI}{dt}} > 0$. Comparing a variety of curves of from the SIR model with the same $\gamma$, and $\\I_0 $ value and with different values of $\R_0$ ranging from 1 to 5, it can be seen that the curve that fits the data best is the curve with $\R_0 = 2$. Based on these results, it is important that the PHAC continues to receive funding in order to determine better means to contain the growth of influenza in case of an outbreak.
+  }
   \end{proof}
   }
 
