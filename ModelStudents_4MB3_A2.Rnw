@@ -52,20 +52,21 @@ The purpose of the last line of code above is to ensure that \Rlogo encodes char
 
   {\color{blue} \begin{proof}[Solution]
   {\color{magenta}
-<<Q1c,echo=FALSE,fig.height=6,fig.align="center">>=
-datafile <- "pim_us_phila_city_1918_dy.csv"
-philadata <- read.csv(datafile)
-philadata$date <- as.Date(philadata$date)
-
-
-#Plotting data with a grey line, L shape plot borders, and no labels
-plot(pim~date,philadata,type="l",col="gray",bty="L",xlab="",ylab="",xaxs="i",yaxs="i",las=1)
-#Plotting red dots with black outlines at data points
-  points(pim~date,philadata,pch=21,bg="red",xpd=TRUE)
-  #Adding labels
-  mtext("Date",side=1,line=2,adj=1,col="blue",cex=1.25)
+<<Q1c,fig.height=6,fig.align="center">>=
+## generate box with plot of date vs P&I Deaths
+plot(pim~date,philadata,type="l",col="gray",
+     bty="L",xlab="",ylab="",xaxs="i",yaxs="i",
+     las=1)
+## generate datapoints
+  points(pim~date,philadata,pch=21,bg="red",
+         xpd=TRUE)
+## label x-axis
+  mtext("Date",side=1,line=2,adj=1,col="blue",
+        cex=1.25)
+## label y-axis
   loc=par("usr")
-  text(loc[1],loc[4],"P&I Deaths",xpd=T,adj=c(1,0),pos=3,col="blue",cex=1.25)
+  text(loc[1],loc[4],"P&I Deaths",xpd=T,
+       adj=c(1,0),pos=3,col="blue",cex=1.25)
 @
   }
   \end{proof}
@@ -101,21 +102,25 @@ The left hand side of~\ref{eq2a} is a constant but this is true for a range of $
 
   {\color{blue} \begin{proof}[Solution]
   {\color{magenta}
-<<Q2b,echo=TRUE,fig.height=6,fig.align="center">>=
-  #Plotting data with a grey line, L shape plot borders, 
-  #and no labels
-plot(log(pim)~date,philadata,type="l",col="gray",bty="L",xlab="",
-     ylab="",xaxs="i",yaxs="i",las=1)
-  #Plotting red dots with black outlines at data points
-points(log(pim)~date,philadata,pch=21,bg="red",xpd=TRUE)
-#Adding labels
-mtext("Date",side=1,line=2,adj=1,col="blue",cex=1.25)
-loc=par("usr")
-text(loc[1],loc[4],"P&I Deaths",xpd=T,adj=c(1,0),pos=3,col="blue",
-     cex=1.25)
-
-#Fitting a straight line using lm to a subset of the data
+<<Q2b,fig.height=6,fig.align="center">>=
+## get subset of data for linear regression
 loglinedata <- philadata[20:37,]
+
+## generate box with plot of date vs log(P&I Deaths)
+plot(log(pim)~date,philadata,type="l",
+     col="gray",bty="L",xlab="",ylab="",
+     xaxs="i",yaxs="i",las=1)
+## generate datapoints
+points(log(pim)~date,philadata,pch=21,bg="red",
+       xpd=TRUE)
+## label x-axis
+mtext("Date",side=1,line=2,adj=1,col="blue",
+      cex=1.25)
+## label y-axis
+loc=par("usr")
+text(loc[1],loc[4],"P&I Deaths",xpd=T,
+     adj=c(1,0),pos=3,col="blue",cex=1.25)
+## generate linear regression 
 abline(lm(log(pim)~date,loglinedata),lty=2,lwd=2)
 @
   }
@@ -388,7 +393,7 @@ draw.soln(ic=c(x=S0,y=I0),tmax=tmax,
   soln <- ode(ic,times,func,parms)
   #index of rows of soln
   inxvals<-c(1:length(soln[,1]))
-  #making vecotr of zeros to store distances betwwen points in
+  #making vector of zeros to store distances between points in
   dist <- numeric(length(philadatatrans$date))
   for (i in 1:length(philadatatrans$date)){
    x<-philadatatrans$date[i]
@@ -422,16 +427,18 @@ Incidentally, you might be interested to know that rumour has it that all of the
   \newpage
     A plot of the original data clearly shows that the peak of the epidemic occurred in mid-October, where approximately 800 individuals died from either influenza or pneumonia. In addition to this, the epidemic appears to have endured for approximately 40 days, beginning in mid-September and ending by mid-November. Overall the data produces a curve that exhibits a symmetric relationship along the peak, which biologically may signify that the rate at which influenza spread and dissipated in this epidemic is approximately equivalent. However the biological significance of these results may not hold, due to the fact that the data is based on the assumption that individuals that exhibited symptoms characterized by pneumonia before death were afflicted by influenza. This assumption may not hold, since pneumonia is not a quantifiable marker that is always traced back directly to influenza. As a result, it is highly recommended that PHAC continues to receive funding to systematically filter out false positives, in order to increase the reliability of the data. 
 The plot of the log transformed data clearly showcases the degree of variation that exists within the sections in the plot that illustrate a non-infectious period. This variability clearly shows the presence of fatal influenza cases before the epidemic. If the infectious period of influenza is high, it is possible that the deaths of the individuals observed during the period before the outbreak, could have caused the epidemic.  However, due to the fact that the number of deaths that produce this variability is very small, this observation is likely insignificant. In addition to this, the plot shows that the number of deaths that were recorded did not level off back to the values before the epidemic. This observation may mean that the disease continued to be spread by individuals that were immune infected carriers or immigrants, or that the disease continued to thrive in organisms or environments where human exposure was unlikely. Regardless of the phenomena showcased by the log transform, it is apparent by the first graph that the number of the deaths that lead to this variability between the tails of the curve and within the curve is approximately equivalent. This implies that the log transform exaggerates this relationship meaning that one must scrutinize it carefully.  
-By fitting a line through the component of the log transformed curve that is increasing towards the peak, the parameter $\B$ can be estimated by calculating the slope of the linear relationship, and the parameter $\I_0$ by calculating the y-intercept of the line. The parameter $\B$ represents the average number of contacts with the susceptible population that lead to a new infective per unit time per infective in the population. Using the estimated value of $\B$, the value of $\R_0$ is estimated by using the following equation, 
+By fitting a line through the component of the log transformed curve that is increasing towards the peak, the parameter $B$ can be estimated by calculating the slope of the linear relationship, and the parameter $I_0$ by calculating the y-intercept of the line. The parameter $B$ represents the average number of contacts with the susceptible population that lead to a new infective per unit time per infective in the population. Using the estimated value of $B$, the value of $R_0$ is estimated by using the following equation, 
 \begin{equation}
-	\B\simeq (\R_0-1)\gamma
+	B\simeq (\R_0-1)\gamma
 \end{equation}
 , where $\R_0$ represents the basic reproduction number. 
 By setting $\gamma = 0.25$ this method leads to the following results, 
-	$\\B = 0.2439$
-	$\\R_0 = 1.9756$
-	$\\I_0 = $
-This fits the given dataset, since the magnitude of $\R_0$ is greater than 1, which implies that $\abs{\frac{dI}{dt}} > 0$. Comparing a variety of curves of from the SIR model with the same $\gamma$, and $\\I_0 $ value and with different values of $\R_0$ ranging from 1 to 5, it can be seen that the curve that fits the data best is the curve with $\R_0 = 2$. Based on these results, it is important that the PHAC continues to receive funding in order to determine better means to contain the growth of influenza in case of an outbreak.
+\begin{align}
+B &= 0.2439 \\
+\R_0 &= 1.9756 \\
+I_0 &= 1e^{-6}
+\end{align}
+This fits the given dataset, since the magnitude of $\R_0$ is greater than 1, which implies that $|\frac{dI}{dt}| > 0$. Comparing a variety of curves of from the SIR model with the same $\gamma$, and $I_0 $ value and with different values of $\R_0$ ranging from 1 to 5, it can be seen that the curve that fits the data best is the curve with $\R_0 = 2$. Based on these results, it is important that the PHAC continues to receive funding in order to determine better means to contain the growth of influenza in case of an outbreak.
   }
   \end{proof}
   }
