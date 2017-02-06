@@ -51,19 +51,22 @@ The purpose of the last line of code above is to ensure that \Rlogo encodes char
 \item Reproduce [the Philadelphia 1918 P\&I] plot:
 
   {\color{blue} \begin{proof}[Solution]
-  {\color{magenta}\n
-<<Q1c,echo=FALSE,fig.height=6,fig.align="center">>=
-datafile <- "pim_us_phila_city_1918_dy.csv"
-philadata <- read.csv(datafile)
-philadata$date <- as.Date(philadata$date)
-linedata <- philadata[31:41,]
-loglinedata <- philadata[20:37,]
-
-plot(pim~date,philadata,type="l",col="gray",bty="L",xlab="",ylab="",xaxs="i",yaxs="i",las=1)
-  points(pim~date,philadata,pch=21,bg="red",xpd=TRUE)
-  mtext("Date",side=1,line=2,adj=1,col="blue",cex=1.25)
+  {\color{magenta} 
+<<Q1c,fig.height=6,fig.align="center">>=
+## generate box with plot of date vs P&I Deaths
+plot(pim~date,philadata,type="l",col="gray",
+     bty="L",xlab="",ylab="",xaxs="i",yaxs="i",
+     las=1)
+## generate datapoints
+  points(pim~date,philadata,pch=21,bg="red",
+         xpd=TRUE)
+## label x-axis
+  mtext("Date",side=1,line=2,adj=1,col="blue",
+        cex=1.25)
+## label y-axis
   loc=par("usr")
-  text(loc[1],loc[4],"P&I Deaths",xpd=T,adj=c(1,0),pos=3,col="blue",cex=1.25)
+  text(loc[1],loc[4],"P&I Deaths",xpd=T,
+       adj=c(1,0),pos=3,col="blue",cex=1.25)
 @
   }
   \end{proof}
@@ -79,7 +82,7 @@ plot(pim~date,philadata,type="l",col="gray",bty="L",xlab="",ylab="",xaxs="i",yax
 
  {\color{blue} \begin{proof}[Solution]
  {\color{magenta}
-  Assume that $I(t)$ and $M(t)$ are growing exponentially for $t \in (\alpha, \beta)$:
+ Assume that $I(t)$ and $M(t)$ are growing exponentially for $t \in (\alpha, \beta)$ for $\alpha$,$\beta$ $\in$ $\mathbb{R}$:
 \begin{align}
   I(t) &= a_1 e^{b_1 t}  \\
   M(t) &= a_2 e^{b_2 t} 
@@ -91,20 +94,33 @@ If $I(t) = \eta M(t-\tau)$, then
   (b_1-b_2) t &= \log \left ( \frac{\eta a_2}{a_1} \right )- b_2\tau \label{eq2a}
 \end{align}
 The left hand side of~\ref{eq2a} is a constant but this is true for a range of $t$. Therefore, the right hand side must be zero and $b_1=b_2$.
- }
+  }
  \end{proof}
  }
 
 \item Fit a straight line to the part of the Philadelphia 1918 mortality time series that looks straight on a logarithmic scale (and show your result in a plot).  Once you get the hang of it, the easiest way to do this is to use the \code{lm()} function in \Rlogo (lm stands for linear model).  Note that simplest way to draw a straight line with given slope and intercept is with the \code{abline()} function.  If you find \code{lm()} counter-intuitive to understand then experiment with \code{abline()} until your eyes tell you that you have discovered a line that provides a good fit.
 
   {\color{blue} \begin{proof}[Solution]
-  {\color{magenta}\n
-<<Q2b,echo=FALSE,fig.height=6,fig.align="center">>=
-plot(log(pim)~date,philadata,type="l",col="gray",bty="L",xlab="",ylab="",xaxs="i",yaxs="i",las=1)
-points(log(pim)~date,philadata,pch=21,bg="red",xpd=TRUE)
-mtext("Date",side=1,line=2,adj=1,col="blue",cex=1.25)
+  {\color{magenta} 
+<<Q2b,fig.height=6,fig.align="center">>=
+## get subset of data for linear regression
+loglinedata <- philadata[20:37,]
+
+## generate box with plot of date vs log(P&I Deaths)
+plot(log(pim)~date,philadata,type="l",
+     col="gray",bty="L",xlab="",ylab="",
+     xaxs="i",yaxs="i",las=1)
+## generate datapoints
+points(log(pim)~date,philadata,pch=21,bg="red",
+       xpd=TRUE)
+## label x-axis
+mtext("Date",side=1,line=2,adj=1,col="blue",
+      cex=1.25)
+## label y-axis
 loc=par("usr")
-text(loc[1],loc[4],"P&I Deaths",xpd=T,adj=c(1,0),pos=3,col="blue",cex=1.25)
+text(loc[1],loc[4],"P&I Deaths",xpd=T,
+     adj=c(1,0),pos=3,col="blue",cex=1.25)
+## generate linear regression 
 abline(lm(log(pim)~date,loglinedata),lty=2,lwd=2)
 @
   }
@@ -126,8 +142,22 @@ Thus, initially $I(t)\simeq I_0 e^{(\R_0-1)\gamma t}$ and
 \end{equation}
 and so the slope of the fitted line on the log plot of prevalence is $(\R_0-1)\gamma$.
 Since this slope depends on both $\R_0$ and $\gamma$, another measure of $\gamma$ is required to estimate $\R_0$.
-  
-  }
+
+<<Q2c,echo=FALSE,results="hide">>=
+## get slope
+summary(lmresult <- lm(log(pim)~date,loglinedata))
+slope <- coef(lmresult)["date"]
+
+est <- 4*as.numeric(slope) + 1 ## calculate estimate of \\R_0
+@
+
+Given $\frac{1}{\gamma} = 4$, and taking the slope to be approximately \Sexpr{paste(signif(slope,4))}, the value of $\R_0$ can be estimated.
+\begin{align}
+\Sexpr{paste(signif(slope,4))} &\approx (\R_0-1)\gamma \\
+\R_0 &\approx 4(\Sexpr{paste(signif(slope,4))}) + 1 \\
+\R_0 &\approx \Sexpr{paste(signif(est,4))}
+\end{align}
+    }
   \end{proof}
   }
 
@@ -225,8 +255,8 @@ for (i in 1:length(betavals)) {
   \end{itemize}
 
  {\color{blue} \begin{proof}[Solution]
- {\color{magenta} \n
- <<Q3b,eval=FALSE>>=
+ {\color{magenta}
+<<Q3b,eval=FALSE>>=
 ## Vector Field for SIR Model
 SIR.vector.field <- function(t,vars,parms=c(R_0=1,gamma=1)) {
   with(as.list(c(parms,vars)), {
@@ -272,9 +302,9 @@ legend("topright",legend=vals,lty=line,col=line,title="\\R_0 Values")
 \item For $I_0=10^{-3}$ and $S_0=1-I_0$, plot the solutions of the SIR model assuming $1/\gamma=4$ days and $\R_0\in\{1.2,1.5,1.8,2,3,4\}$.  Use the \code{legend()} command to make a legend on the plot that shows which curves correspond to which values of $\R_0$.
 
   {\color{blue} \begin{proof}[Solution]
-  {\color{magenta} [Insert Text Here]
+  {\color{magenta}
   
-  <<Q3c,echo=FALSE,fig.height=6>>=
+  <<Q3c,fig.height=6,fig.align="center">>=
 ## Vector Field for SIR Model
 SIR.vector.field <- function(t,vars,parms=c(R_0=1,gamma=1)) {
   with(as.list(c(parms,vars)), {
@@ -296,7 +326,7 @@ draw.soln <- function(ic=c(x=1,y=0),tmax=1,
 ## Plot Solutions of the SIR Model
 tmax <- 40
 ## draw box for plot
-plot(0,0,xlim=c(0,tmax),ylim=c(0,1),type="n",xlab="Time (t)",
+plot(0,0,xlim=c(0,tmax),ylim=c(0,0.5),type="n",xlab="Time (t)",
      ylab="Prevalence (I)",las=1)
 ## initial conditions
 I0 <- 1e-3
@@ -320,81 +350,108 @@ legend("topright",legend=vals,lty=line,col=line,title="\\R_0 Values")
 \item By trial and error, find values of $\R_0$ and $\gamma$ that yield a solution of the SIR model that fits the Philadelphia P\&I times series reasonably well.  You can assess the quality of fit using the Euclidean distance between the model solution and the data.  (\emph{Note:}  The trial and error approach is a valuable exercise, but not a suggestion of a method you would really use in practice.  We'll discuss better methods for fitting ODE models to data later.)
 
   {\color{blue} \begin{proof}[Solution]
-  {\color{magenta}
-  
-    <<Q3d,echo=FALSE,fig.height=6,fig.align="center">>=
+  {\color{magenta} To transform the data so that it is comparable with the scale of the generated models, the x-axis ("Date") must be transformed in terms of time and the y-axis ("P$\&$I Deaths") must be transformed to a prevalence measurement. By taking an index of days after \verb|"1918-09-01"|, the data can be viewed in terms of days which can be compared similarly to the generated solution, which is in terms of mean infectious periods ($\frac{1}{\gamma}$). 
+  Since it was proven in question 2(a) that prevalence and mortality rates grow identically, dividing each mortality measurement by a total population will give prevalence in terms of mortality. From Assignment 1, peak prevalence was defined as:
 
-philadata$date <- as.numeric(as.Date(philadata$date)-as.Date(philadata$date[1]))
-philadata$pim <- philadata$pim/(2*max(philadata$pim))
+\begin{equation}
+I_p = (I_0+S_0) - \frac{1}{\R_0} \left (\ln{\R_0 S_0} +1 \right )
+\end{equation}
+Since $I_p = \frac{Peak Deaths}{Total Population}$, an expression for total population in terms of $\R_0$, $I_0$, and $S_0$ (with $S_0 = 1-I_0$) can be found.
 
-plot(pim~date,philadata,type="l",col="gray",bty="L",xlab="",ylab="",xaxs="i",yaxs="i",las=1)
-  points(pim~date,philadata,pch=21,bg="red",xpd=TRUE)
-  mtext("Days after 1918-09-01",side=1,line=2,adj=1,col="blue",cex=1.25)
-  loc=par("usr")
-  text(loc[1],loc[4],"P&I Deaths",xpd=T,adj=c(1,0),pos=3,col="blue",cex=1.25)
+\begin{align}
+\frac{Peak Deaths}{Total Population} &= (I_0+S_0)-\frac{1}{\R_0} (\ln{\R_0 S_0 + 1}) \\
+Total Population &= \frac{Peak Deaths}{(I_0+S_0)-\frac{1}{\R_0} (\ln{\R_0 S_0 + 1})} \\
+&= \frac{Peak Deaths}{1-\frac{1}{\R_0} (\ln(\R_0 (1-I_0) + 1))}
+\end{align}
+<<Q3d,fig.height=6,fig.align="center">>=
+## get data in terms of days after 1918-09-01
+days <- c(1:length(philadata$date))
 
-  ## Draw Solution Modified to have a start time
-draw.soln <- function(ic=c(x=1,y=0),tmax=1,tstart=0,
-                      times=seq(tstart,tmax,by=tmax/500-tstart/500),
+## generate box with plot of prevalence in terms of mortality vs days
+## zoom into peak interval
+plot((pim/5000)~days,philadata,xlim=c(25,55),
+     ylim=c(0,0.25),type="l",col="gray",
+     bty="L",xlab="",ylab="",xaxs="i",yaxs="i",
+     las=1)
+## generate datapoints
+points((pim/5000)~days,philadata,pch=21,
+       bg="red",xpd=TRUE)
+## label x-axis
+mtext("Days",side=1,line=2,adj=1,col="blue",
+      cex=1.25)
+## label y-axis
+loc=par("usr")
+text(loc[1],loc[4],"Prevalence",xpd=T,
+     adj=c(1,0),pos=3,col="blue",cex=1.25)
+
+## Vector Field for SIR Model
+SIR.vector.field <- function(t,vars,parms=c(R_0=1,gamma=1)) {
+  with(as.list(c(parms,vars)), {
+    dx <- -R_0*gamma*x*y  ## dS/dt
+    dy <- gamma*(R_0*x*y-y)  ## dI/dt
+    vec.fld <- c(dx=dx,dy=dy)
+    return(list(vec.fld)) 
+  })
+}
+
+## Draw Solution
+draw.soln <- function(ic=c(x=1,y=0),tmax=1,
+                      times=seq(0,tmax,
+                                by=tmax/500),
                       func,parms,...) {
   soln <- ode(ic,times,func,parms)
   lines(times,soln[,"y"],lwd=2,...)
-}  
+}
 
 ## Plot Solutions of the SIR Model
-tmax <- 122
-tstart <- 10
-
-
+tmax <- length(days)
 ## initial conditions
-I0 <- 1e-3
+I0 <- 1e-06
 S0 <- 1-I0
-
 ## draw solutions for several values of parameter R_0
-vals <- seq(1.2,5,length=5)
+vals <- seq(1.98,2.05,length=5)
 line <- c(1:length(vals))
 for (i in 1:length(vals)) {
-  draw.soln(ic=c(x=S0,y=I0),tmax=tmax,tstart=tstart,
-            func=SIR.vector.field,parms=c(R_0=vals[i],gamma=1/15),
+  draw.soln(ic=c(x=S0,y=I0),tmax=tmax,
+            func=SIR.vector.field,
+            parms=c(R_0=vals[i],gamma=1/3),
             lty=line[i], # use a different line style for each solution
             col=line[i]) # use a different line colour for each solution
 }
 # draw legend for different values of R_0
-legend("topright",legend=vals,lty=line,col=line,title="\\R_0 Values") #**
+legend("topright",legend=vals,lty=line,
+       col=line,title="\\R_0 Values")
 
-
-#define dist fct
-  euc.dist <- function(x1, x2){ sqrt(sum((x1 - x2) ^ 2)) }
-#distance between data and solution
-modeldist <- function(R_0=2.03, gamma=1/3){
-  #input to ode
-  I0 <- 1e-6
-  S0 <- 1-I0
-  tmax <- 122
-  tstart <- 0
-  ic<-c(x=S0,y=I0)
-  times<-seq(tstart,tmax,by=tmax/500-tstart/500)
-  func<-SIR.vector.field
-  parms<-c(R_0,gamma)
-  #get solution
-  soln <- ode(ic,times,func,parms)
-  #index of rows of soln
-  inxvals<-c(1:length(soln[,1]))
-  
-  dist <- numeric(length(philadatatrans$date))
-  for (i in 1:length(philadatatrans$date)){
-   x<-philadatatrans$date[i]
-     #get index in soln of row with same x value as data
-   index <- which(abs(soln[,1]-x)==min(abs(soln[,1]-x)))
-   dist[i]=euc.dist( c(x,philadatatrans$pim[i]), c(soln[index,1],soln[index,3]))
-  }
-  avgdist <- mean(dist)
-  return(avgdist)
+## Define Euclidean Distance Function
+euc.dist <- function(x1=c(1:length(days)), x2=c(1:length(days))) { 
+  sqrt(sum((x1[i] - x2[i])^2)) 
 }
-modeldist(2.03,(1/3))
 
-@
+## Define Distance between Data and Solution
+error <- function(ic=c(x=S0,y=I0),tmax=tmax,
+                  func=SIR.vector.field,
+                  parms=c(R_0=1,gamma=1)) {
+## get prevalence in terms of mortality from dataset
+  datayvals <- philadata$pim/5000
+  ## generate approximated solution for \\R_0 and \\gamma 
+  soln <- ode(ic,times=seq(0,tmax,by=tmax/500),func,parms)
+  ## get sample values of time and prevalence in terms of days
+  solnxvals <- soln[seq(1,500,4),"time"]
+  solnyvals <- soln[seq(1,500,4),"y"]
+  ## get euclidean distance by difference of datavalues
+  distx <- euc.dist(days,solnxvals)
+  disty <- euc.dist(datayvals,solnyvals)
   
+  err <- c(distx,disty)
+  return(err)
+}
+
+## generate error for \\R_0 and \\gamma value
+ans <- error(ic=c(x=S0,y=I0),tmax=tmax,
+             func=SIR.vector.field,
+             parms=c(R_0=1.9975,gamma=1/3))
+@
+So, the error in time between the data and the model is \Sexpr{paste(ans[1])} days and the error in prevalence is \Sexpr{paste(signif(ans[2],4))}.
   }
   \end{proof}
   }
